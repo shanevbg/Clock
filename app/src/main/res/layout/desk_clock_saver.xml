@@ -13,6 +13,12 @@
     android:background="@android:color/black"
     tools:ignore="Overdraw">
 
+    <com.best.deskclock.screensaver.ColorShiftingBackgroundView
+        android:id="@+id/screensaver_color_shift_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
     <ImageView
         android:id="@+id/screensaver_background_image"
         android:layout_width="match_parent"
@@ -48,23 +54,33 @@
             tools:visibility="visible"
             tools:ignore="TextContrastCheck" />
 
-        <com.best.deskclock.uicomponents.AnalogClock
-            android:id="@+id/analog_clock"
+        <LinearLayout
+            android:id="@+id/combo_clock_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal" />
-
-        <com.best.deskclock.uicomponents.AutoSizingTextClock
-            android:id="@+id/digital_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:ellipsize="none"
+            android:layout_gravity="center_horizontal"
             android:gravity="center"
-            android:singleLine="true"
-            tools:textSize="70sp"
-            tools:text="12:34"
-            tools:ignore="TextContrastCheck" />
+            android:orientation="vertical">
+
+            <com.best.deskclock.uicomponents.AnalogClock
+                android:id="@+id/analog_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
+
+            <com.best.deskclock.uicomponents.AutoSizingTextClock
+                android:id="@+id/digital_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:ellipsize="none"
+                android:gravity="center"
+                android:singleLine="true"
+                tools:textSize="70sp"
+                tools:text="12:34"
+                tools:ignore="TextContrastCheck" />
+
+        </LinearLayout>
 
         <include layout="@layout/date_and_next_alarm_time" />
 

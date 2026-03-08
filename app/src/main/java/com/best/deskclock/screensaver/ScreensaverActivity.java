@@ -41,6 +41,7 @@ import com.best.deskclock.utils.ScreensaverUtils;
 import com.best.deskclock.utils.SdkUtils;
 import com.best.deskclock.utils.ThemeUtils;
 
+import java.util.List;
 import java.util.Objects;
 
 public class ScreensaverActivity extends BaseActivity {
@@ -90,6 +91,7 @@ public class ScreensaverActivity extends BaseActivity {
     private View mMainClockView;
 
     private MoveScreensaverRunnable mPositionUpdater;
+    private List<MoveScreensaverRunnable> mComboPositionUpdaters;
     private PulseScreensaverBackgroundRunnable mBackgroundAnimator;
 
     @Override
@@ -105,15 +107,17 @@ public class ScreensaverActivity extends BaseActivity {
         setContentView(R.layout.desk_clock_saver);
         mContentView = findViewById(R.id.saver_container);
         mMainClockView = findViewById(R.id.main_clock);
-        ImageView background = findViewById(R.id.screensaver_background_image);
 
         ScreensaverUtils.hideScreensaverSystemBars(getWindow(), getWindow().getDecorView());
 
         ScreensaverUtils.setScreensaverClockStyle(
                 this, getDefaultSharedPreferences(this), mContentView);
 
+        mComboPositionUpdaters = ScreensaverUtils.setupComboFloating(
+                mContentView, mMainClockView, getDefaultSharedPreferences(this));
         mPositionUpdater = new MoveScreensaverRunnable(mContentView, mMainClockView);
 
+        ImageView background = findViewById(R.id.screensaver_background_image);
         if (background.getVisibility() == View.VISIBLE) {
             mBackgroundAnimator = new PulseScreensaverBackgroundRunnable(background);
         }
@@ -285,24 +289,26 @@ public class ScreensaverActivity extends BaseActivity {
      */
     private void stopPositionUpdater() {
         mContentView.getViewTreeObserver().removeOnPreDrawListener(mStartPositionUpdater);
+        if (mComboPositionUpdaters != null) {
+            for (MoveScreensaverRunnable updater : mComboPositionUpdaters) {
+                updater.stop();
+            }
+        }
         mPositionUpdater.stop();
     }
 
     private final class StartPositionUpdater implements OnPreDrawListener {
-        /**
-         * This callback occurs after initial layout has completed. It is an appropriate place to
-         * select a random position for {@link #mMainClockView} and schedule future callbacks to update
-         * its position.
-         *
-         * @return {@code true} to continue with the drawing pass
-         */
         @Override
         public boolean onPreDraw() {
             if (mContentView.getViewTreeObserver().isAlive()) {
-                // Start the periodic position updater.
-                mPositionUpdater.start();
+                if (mComboPositionUpdaters != null && !mComboPositionUpdaters.isEmpty()) {
+                    for (MoveScreensaverRunnable updater : mComboPositionUpdaters) {
+                        updater.start();
+                    }
+                } else {
+                    mPositionUpdater.start();
+                }
 
-                // This listener must now be removed to avoid starting the position updater again.
                 mContentView.getViewTreeObserver().removeOnPreDrawListener(mStartPositionUpdater);
             }
             return true;

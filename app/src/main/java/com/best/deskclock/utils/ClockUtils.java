@@ -43,7 +43,7 @@ public class ClockUtils {
                                                     boolean displaySeconds) {
 
         switch (clockStyle) {
-            case ANALOG, ANALOG_MATERIAL -> {
+            case ANALOG, ANALOG_MATERIAL, COMBO -> {
                 analogClock.enableSeconds(displaySeconds);
                 return;
             }
@@ -73,6 +73,11 @@ public class ClockUtils {
             case DIGITAL -> {
                 digitalClock.setVisibility(View.VISIBLE);
                 analogClock.setVisibility(View.GONE);
+                return;
+            }
+            case COMBO -> {
+                analogClock.setVisibility(View.VISIBLE);
+                digitalClock.setVisibility(View.VISIBLE);
                 return;
             }
         }

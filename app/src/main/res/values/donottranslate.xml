@@ -278,12 +278,14 @@
         <item>@string/clock_style_analog</item>
         <item>@string/clock_style_analog_material</item>
         <item>@string/clock_style_digital</item>
+        <item>@string/clock_style_combo</item>
     </string-array>
     <!-- Values that are retrieved from the ListPreference. These must match the clock_style_entries above. -->
     <string-array name="clock_style_values" translatable="false">
         <item>analog</item>
         <item>analog_material</item>
         <item>digital</item>
+        <item>combo</item>
     </string-array>
 
     <!-- Entries listed in the ListPreference when invoking the clock dial preference. -->
@@ -515,5 +517,19 @@
         <item>1</item>
         <item>2</item>
         <item>3</item>
+    </string-array>
+
+    <!-- Entries listed in the ListPreference when selecting the color shift mode. -->
+    <string-array name="color_shift_mode_entries">
+        <item>Hue rotation</item>
+        <item>Gradient</item>
+        <item>Aurora</item>
+    </string-array>
+    <!-- Values that are retrieved from the ListPreference. These must match
+         the color_shift_mode_entries above. -->
+    <string-array name="color_shift_mode_values">
+        <item>hue_rotation</item>
+        <item>gradient</item>
+        <item>aurora</item>
     </string-array>
 </resources>

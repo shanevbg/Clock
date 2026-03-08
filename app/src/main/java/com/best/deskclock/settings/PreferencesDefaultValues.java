@@ -172,6 +172,21 @@ public class PreferencesDefaultValues {
     public static final int DEFAULT_SCREENSAVER_CUSTOM_COLOR = Color.WHITE;
     public static final int DEFAULT_SCREENSAVER_BRIGHTNESS = 40;
     public static final boolean DEFAULT_SCREENSAVER_FORMATTING = false;
+    public static final boolean DEFAULT_SCREENSAVER_COLOR_SHIFT_ENABLED = false;
+    public static final String DEFAULT_SCREENSAVER_COLOR_SHIFT_MODE = "hue_rotation";
+    public static final int DEFAULT_SCREENSAVER_COLOR_SHIFT_SPEED = 50;
+    public static final int DEFAULT_SCREENSAVER_COLOR_SHIFT_COLOR_1 = Color.parseColor("#FFFF0000");
+    public static final int DEFAULT_SCREENSAVER_COLOR_SHIFT_COLOR_2 = Color.parseColor("#FF0000FF");
+    public static final boolean DEFAULT_AUTO_START_SCREENSAVER_WHEN_CHARGING = false;
+
+    // Combo screensaver
+    public static final boolean DEFAULT_COMBO_SHOW_ANALOG = true;
+    public static final boolean DEFAULT_COMBO_SHOW_DIGITAL = true;
+    public static final boolean DEFAULT_COMBO_SHOW_DATE = true;
+    public static final int DEFAULT_COMBO_ANALOG_COLOR = Color.WHITE;
+    public static final int DEFAULT_COMBO_DIGITAL_COLOR = Color.WHITE;
+    public static final int DEFAULT_COMBO_DATE_COLOR = Color.WHITE;
+    public static final int DEFAULT_COMBO_DATE_SIZE = 24;
 
     // Common settings values
     public static final String DEFAULT_CLOCK_DIAL = "dial_with_numbers";

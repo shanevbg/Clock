@@ -32,7 +32,14 @@ import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_DIGITA
 import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_NEXT_ALARM_COLOR_PICKER;
 import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_NEXT_ALARM_IN_BOLD;
 import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_NEXT_ALARM_IN_ITALIC;
+import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_COLOR_SHIFT_ENABLED;
+import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_COLOR_SHIFT_MODE;
+import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_COLOR_SHIFT_SPEED;
+import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_COLOR_SHIFT_COLOR_1;
+import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_COLOR_SHIFT_COLOR_2;
 import static com.best.deskclock.settings.PreferencesKeys.KEY_SCREENSAVER_PREVIEW;
+
+import androidx.preference.PreferenceCategory;
 
 import android.content.Context;
 import android.content.Intent;
@@ -112,6 +119,12 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
         CustomSeekbarPreference mScreensaverBlurIntensityPref;
         CustomPreference mScreensaverPreview;
         CustomPreference mScreensaverMainSettings;
+        CustomSwitchPreference mColorShiftEnabledPref;
+        CustomListPreference mColorShiftModePref;
+        CustomSeekbarPreference mColorShiftSpeedPref;
+        ColorPickerPreference mColorShiftColor1Pref;
+        ColorPickerPreference mColorShiftColor2Pref;
+        PreferenceCategory mComboCategoryPref;
 
         String[] mClockStyleValues;
         String mAnalogClock;
@@ -234,6 +247,13 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
             mScreensaverBlurIntensityPref = findPreference(KEY_SCREENSAVER_BLUR_INTENSITY);
             mScreensaverPreview = findPreference(KEY_SCREENSAVER_PREVIEW);
             mScreensaverMainSettings = findPreference(KEY_SCREENSAVER_DAYDREAM_SETTINGS);
+            mColorShiftEnabledPref = findPreference(KEY_SCREENSAVER_COLOR_SHIFT_ENABLED);
+            mColorShiftModePref = findPreference(KEY_SCREENSAVER_COLOR_SHIFT_MODE);
+            mColorShiftSpeedPref = findPreference(KEY_SCREENSAVER_COLOR_SHIFT_SPEED);
+            mColorShiftColor1Pref = findPreference(KEY_SCREENSAVER_COLOR_SHIFT_COLOR_1);
+            mColorShiftColor2Pref = findPreference(KEY_SCREENSAVER_COLOR_SHIFT_COLOR_2);
+
+            mComboCategoryPref = findPreference("key_combo_category");
 
             mClockStyleValues = getResources().getStringArray(R.array.clock_style_values);
             mAnalogClock = mClockStyleValues[0];
@@ -253,19 +273,20 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
                     boolean isAnalogClock = newValue.equals(mAnalogClock);
                     boolean isMaterialAnalogClock = newValue.equals(mMaterialAnalogClock);
                     boolean isDigitalClock = newValue.equals(mDigitalClock);
+                    boolean isComboClock = newValue.equals("combo");
                     boolean areDynamicColors = SettingsDAO.areScreensaverClockDynamicColors(mPrefs);
                     boolean isBatteryDisplayed = SettingsDAO.isScreensaverBatteryDisplayed(mPrefs);
 
                     if (SdkUtils.isAtLeastAndroid12()) {
-                        mClockDynamicColorPref.setVisible(!isMaterialAnalogClock);
-                        mClockColorPref.setVisible(!isMaterialAnalogClock && !areDynamicColors);
+                        mClockDynamicColorPref.setVisible(!isMaterialAnalogClock && !isComboClock);
+                        mClockColorPref.setVisible(!isMaterialAnalogClock && !areDynamicColors && !isComboClock);
                         if (areDynamicColors) {
                             mBatteryColorPref.setVisible(isBatteryDisplayed && isMaterialAnalogClock);
                             mDateColorPref.setVisible(isMaterialAnalogClock);
                             mNextAlarmColorPref.setVisible(isMaterialAnalogClock);
                         }
                     } else {
-                        mClockColorPref.setVisible(!isMaterialAnalogClock);
+                        mClockColorPref.setVisible(!isMaterialAnalogClock && !isComboClock);
                     }
 
                     mClockDialPref.setVisible(isAnalogClock);
@@ -273,10 +294,14 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
                     mAnalogClockSizePref.setVisible(!isDigitalClock);
                     mClockSecondHandPref.setVisible(isAnalogClock
                             && SettingsDAO.areScreensaverClockSecondsDisplayed(mPrefs));
-                    mDigitalClockFontPref.setVisible(isDigitalClock);
-                    mDigitalClockFontSizePref.setVisible(isDigitalClock);
-                    mBoldDigitalClockPref.setVisible(isDigitalClock);
-                    mItalicDigitalClockPref.setVisible(isDigitalClock);
+                    mDigitalClockFontPref.setVisible(isDigitalClock || isComboClock);
+                    mDigitalClockFontSizePref.setVisible(isDigitalClock || isComboClock);
+                    mBoldDigitalClockPref.setVisible(isDigitalClock || isComboClock);
+                    mItalicDigitalClockPref.setVisible(isDigitalClock || isComboClock);
+
+                    if (mComboCategoryPref != null) {
+                        mComboCategoryPref.setVisible(isComboClock);
+                    }
                 }
 
                 case KEY_DISPLAY_SCREENSAVER_BATTERY -> {
@@ -325,6 +350,38 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
                             && SettingsDAO.getScreensaverBackgroundImage(mPrefs) != null);
 
                     Utils.setVibrationTime(requireContext(), 50);
+                }
+
+                case KEY_SCREENSAVER_COLOR_SHIFT_ENABLED -> {
+                    boolean isEnabled = (boolean) newValue;
+                    mColorShiftModePref.setVisible(isEnabled);
+                    mColorShiftSpeedPref.setVisible(isEnabled);
+
+                    boolean isGradient = "gradient".equals(SettingsDAO.getScreensaverColorShiftMode(mPrefs));
+                    mColorShiftColor1Pref.setVisible(isEnabled && isGradient);
+                    mColorShiftColor2Pref.setVisible(isEnabled && isGradient);
+
+                    // Mutual exclusion with background image
+                    mScreensaverBackgroundImagePref.setVisible(!isEnabled);
+                    mEnableScreensaverBlurEffectPref.setVisible(!isEnabled
+                            && SdkUtils.isAtLeastAndroid12()
+                            && SettingsDAO.getScreensaverBackgroundImage(mPrefs) != null);
+                    mScreensaverBlurIntensityPref.setVisible(!isEnabled
+                            && SdkUtils.isAtLeastAndroid12()
+                            && SettingsDAO.getScreensaverBackgroundImage(mPrefs) != null
+                            && SettingsDAO.isScreensaverBlurEffectEnabled(mPrefs));
+
+                    Utils.setVibrationTime(requireContext(), 50);
+                }
+
+                case KEY_SCREENSAVER_COLOR_SHIFT_MODE -> {
+                    final CustomListPreference preference = (CustomListPreference) pref;
+                    final int index = preference.findIndexOfValue((String) newValue);
+                    preference.setSummary(preference.getEntries()[index]);
+
+                    boolean isGradient = "gradient".equals(newValue);
+                    mColorShiftColor1Pref.setVisible(isGradient);
+                    mColorShiftColor2Pref.setVisible(isGradient);
                 }
             }
 
@@ -449,6 +506,33 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
             mScreensaverPreview.setOnPreferenceClickListener(this);
 
             mScreensaverMainSettings.setOnPreferenceClickListener(this);
+
+            boolean isColorShiftEnabled = SettingsDAO.isScreensaverColorShiftEnabled(mPrefs);
+            boolean isGradientMode = "gradient".equals(SettingsDAO.getScreensaverColorShiftMode(mPrefs));
+
+            mColorShiftEnabledPref.setOnPreferenceChangeListener(this);
+
+            mColorShiftModePref.setVisible(isColorShiftEnabled);
+            mColorShiftModePref.setSummary(mColorShiftModePref.getEntry());
+            mColorShiftModePref.setOnPreferenceChangeListener(this);
+
+            mColorShiftSpeedPref.setVisible(isColorShiftEnabled);
+
+            mColorShiftColor1Pref.setVisible(isColorShiftEnabled && isGradientMode);
+            mColorShiftColor2Pref.setVisible(isColorShiftEnabled && isGradientMode);
+
+            // Hide background image prefs when color shift is active
+            if (isColorShiftEnabled) {
+                mScreensaverBackgroundImagePref.setVisible(false);
+                mEnableScreensaverBlurEffectPref.setVisible(false);
+                mScreensaverBlurIntensityPref.setVisible(false);
+            }
+
+            // Combo category only visible when combo clock style is selected
+            boolean isComboClock = mClockStylePref.getValue().equals("combo");
+            if (mComboCategoryPref != null) {
+                mComboCategoryPref.setVisible(isComboClock);
+            }
         }
 
     }

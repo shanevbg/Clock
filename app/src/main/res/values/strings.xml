@@ -251,6 +251,8 @@
     <string name="material_you_next_alarm_widget">Next alarm Material You</string>
     <!-- Label for the Settings activity displayed on-screen when that activity must be represented to the user. -->
     <string name="settings">Settings</string>
+    <!-- Label for the screensaver launch button in the toolbar. -->
+    <string name="screensaver">Screensaver</string>
     <!-- Message displayed at the top of the settings if one or more permissions are missing -->
     <string name="settings_permission_message">One or more essential permissions are denied. Not granting them can lead to malfunctions.</string>
     <!-- Summary of the message displayed at the top of the settings if one or more permissions are missing -->
@@ -567,6 +569,38 @@
     <string name="background_image_toast_message_selected">Image successfully selected</string>
     <!-- Toast message when an image is successfully deleted. -->
     <string name="background_image_toast_message_deleted">Image successfully deleted</string>
+    <!-- Setting title for color shift category. -->
+    <string name="color_shift_category_title">Background effect</string>
+    <!-- Setting title to enable color-shifting background. -->
+    <string name="color_shift_enabled_title">Enable color-shifting background</string>
+    <!-- Setting title for color shift mode. -->
+    <string name="color_shift_mode_title">Color shift mode</string>
+    <!-- Setting title for color shift speed. -->
+    <string name="color_shift_speed_title">Color shift speed</string>
+    <!-- Setting title for gradient start color. -->
+    <string name="color_shift_color_1_title">Gradient start color</string>
+    <!-- Setting title for gradient end color. -->
+    <string name="color_shift_color_2_title">Gradient end color</string>
+    <!-- Setting title to auto-start screensaver when charging. -->
+    <string name="auto_start_screensaver_when_charging_title">Auto-start screensaver when charging</string>
+    <!-- Setting summary for auto-start screensaver when charging. -->
+    <string name="auto_start_screensaver_when_charging_summary">Automatically launch the screensaver when the device is plugged in and the app is open</string>
+    <!-- Combo screensaver category title. -->
+    <string name="combo_screensaver_category_title">Combo clock settings</string>
+    <!-- Setting to show analog clock in combo mode. -->
+    <string name="combo_show_analog_title">Show analog clock</string>
+    <!-- Setting to show digital clock in combo mode. -->
+    <string name="combo_show_digital_title">Show digital clock</string>
+    <!-- Setting to show date in combo mode. -->
+    <string name="combo_show_date_title">Show date</string>
+    <!-- Setting for analog clock color in combo mode. -->
+    <string name="combo_analog_color_title">Analog clock color</string>
+    <!-- Setting for digital clock color in combo mode. -->
+    <string name="combo_digital_color_title">Digital clock color</string>
+    <!-- Setting for date color in combo mode. -->
+    <string name="combo_date_color_title">Date color</string>
+    <!-- Setting for date size in combo mode. -->
+    <string name="combo_date_size_title">Date size</string>
     <!-- Setting title to enable a blur effect. -->
     <string name="enable_blur_effect_title">Apply a blur effect to the background image</string>
     <!-- Setting title to enable the use of a custom volume increase duration for each alarm. -->
@@ -827,6 +861,8 @@
     <string name="clock_dial_flower">Flower</string>
     <!-- Setting title for changing the clock style to Digital. -->
     <string name="clock_style_digital">Digital</string>
+    <!-- Setting title for changing the clock style to Combo (analog + digital). -->
+    <string name="clock_style_combo">Combo</string>
     <!-- Setting title for changing the clock style to Spinner. -->
     <string name="clock_style_spinner">Spinner</string>
     <!-- Setting title for customizing the analog clock size. -->

@@ -55,8 +55,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.BatteryManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -95,6 +99,7 @@ import com.best.deskclock.data.OnSilentSettingsListener;
 import com.best.deskclock.data.SettingsDAO;
 import com.best.deskclock.events.Events;
 import com.best.deskclock.provider.Alarm;
+import com.best.deskclock.screensaver.ScreensaverActivity;
 import com.best.deskclock.settings.PermissionsManagementActivity;
 import com.best.deskclock.settings.SettingsActivity;
 import com.best.deskclock.stopwatch.StopwatchService;
@@ -236,6 +241,26 @@ public class DeskClock extends BaseActivity
      * {@code true} when a settings change necessitates recreating this activity.
      */
     private boolean mShouldRecreate = false;
+
+    /** Prevents re-launching screensaver in a loop when returning from it while still charging. */
+    private boolean mScreensaverAutoLaunched = false;
+
+    /**
+     * Receiver that auto-launches the screensaver when the device is plugged in.
+     */
+    private final BroadcastReceiver mChargingReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_POWER_CONNECTED.equals(intent.getAction())
+                    && SettingsDAO.isAutoStartScreensaverWhenCharging(mPrefs)
+                    && !mScreensaverAutoLaunched) {
+                mScreensaverAutoLaunched = true;
+                startActivity(new Intent(DeskClock.this, ScreensaverActivity.class));
+            } else if (Intent.ACTION_POWER_DISCONNECTED.equals(intent.getAction())) {
+                mScreensaverAutoLaunched = false;
+            }
+        }
+    };
 
     /**
      * List of supported preference keys used to monitor UI and behavior changes within
@@ -468,10 +493,20 @@ public class DeskClock extends BaseActivity
         UiDataModel.getUiDataModel().addTabListener(mTabChangeWatcher);
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override
     protected void onStart() {
         DataModel.getDataModel().addSilentSettingsListener(mSilentSettingChangeWatcher);
         DataModel.getDataModel().setApplicationInForeground(true);
+
+        final IntentFilter chargingFilter = new IntentFilter();
+        chargingFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+        chargingFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        if (com.best.deskclock.utils.SdkUtils.isAtLeastAndroid13()) {
+            registerReceiver(mChargingReceiver, chargingFilter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(mChargingReceiver, chargingFilter);
+        }
 
         super.onStart();
     }
@@ -493,6 +528,21 @@ public class DeskClock extends BaseActivity
         updateCurrentTab();
 
         updateKeepScreenOn(UiDataModel.getUiDataModel().getSelectedTab());
+
+        // Auto-launch screensaver if currently charging and setting is enabled
+        if (!mScreensaverAutoLaunched && SettingsDAO.isAutoStartScreensaverWhenCharging(mPrefs)) {
+            final IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+            final Intent batteryStatus = com.best.deskclock.utils.SdkUtils.isAtLeastAndroid13()
+                    ? registerReceiver(null, ifilter, Context.RECEIVER_NOT_EXPORTED)
+                    : registerReceiver(null, ifilter);
+            if (batteryStatus != null) {
+                int plugged = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+                if (plugged != 0) {
+                    mScreensaverAutoLaunched = true;
+                    startActivity(new Intent(this, ScreensaverActivity.class));
+                }
+            }
+        }
     }
 
     @Override
@@ -500,6 +550,11 @@ public class DeskClock extends BaseActivity
         DataModel.getDataModel().removeSilentSettingsListener(mSilentSettingChangeWatcher);
         if (!isChangingConfigurations()) {
             DataModel.getDataModel().setApplicationInForeground(false);
+        }
+
+        try {
+            unregisterReceiver(mChargingReceiver);
+        } catch (IllegalArgumentException ignored) {
         }
 
         super.onStop();
@@ -517,6 +572,9 @@ public class DeskClock extends BaseActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, Menu.NONE, 1, R.string.settings)
                 .setIcon(R.drawable.ic_settings).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+        menu.add(0, 2, 2, R.string.screensaver)
+                .setIcon(R.drawable.ic_screensaver).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         if (areEssentialPermissionsNotGranted(this)) {
             final Drawable warningIcon = AppCompatResources.getDrawable(this, R.drawable.ic_error);
@@ -541,6 +599,9 @@ public class DeskClock extends BaseActivity
         } else if (item.getItemId() == 1) {
             final Intent permissionManagementIntent = new Intent(this, PermissionsManagementActivity.class);
             startActivity(permissionManagementIntent);
+            return true;
+        } else if (item.getItemId() == 2) {
+            startActivity(new Intent(this, ScreensaverActivity.class));
             return true;
         }
 

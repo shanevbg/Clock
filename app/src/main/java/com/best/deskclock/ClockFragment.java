@@ -25,6 +25,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -54,6 +56,7 @@ import com.best.deskclock.data.SettingsDAO;
 import com.best.deskclock.uicomponents.AnalogClock;
 import com.best.deskclock.uicomponents.AutoSizingTextClock;
 import com.best.deskclock.uidata.UiDataModel;
+import com.best.deskclock.screensaver.ScreensaverActivity;
 import com.best.deskclock.utils.AlarmUtils;
 import com.best.deskclock.utils.ClockUtils;
 import com.best.deskclock.utils.SdkUtils;
@@ -110,7 +113,8 @@ public final class ClockFragment extends DeskClockFragment {
         mClockStyle = SettingsDAO.getClockStyle(mPrefs);
         mShowHomeClock = SettingsDAO.getShowHomeClock(mContext, mPrefs);
         mShowSeconds = SettingsDAO.areClockSecondsDisplayed(mPrefs);
-        mIsDigitalClock = mClockStyle == DataModel.ClockStyle.DIGITAL;
+        mIsDigitalClock = mClockStyle == DataModel.ClockStyle.DIGITAL
+                || mClockStyle == DataModel.ClockStyle.COMBO;
         mIsPortrait = ThemeUtils.isPortrait();
         mDateFormat = mContext.getString(R.string.abbrev_wday_month_day_no_year);
         mDateFormatForAccessibility = mContext.getString(R.string.full_wday_month_day_no_year);
@@ -141,7 +145,14 @@ public final class ClockFragment extends DeskClockFragment {
 
             mClockFrame.setPadding(0, 0, 0, 0);
             ClockUtils.setClockStyle(mClockStyle, digitalClock, analogClock);
-            if (mIsDigitalClock) {
+            if (mClockStyle == DataModel.ClockStyle.COMBO) {
+                ClockUtils.adjustAnalogClockSize(analogClock, mPrefs, false, true, false);
+                ClockUtils.setAnalogClockSecondsEnabled(mClockStyle, analogClock, mShowSeconds);
+                ClockUtils.setDigitalClockFont(digitalClock, SettingsDAO.getDigitalClockFont(mPrefs));
+                ClockUtils.setDigitalClockTimeFormat(digitalClock, 0.4f, mShowSeconds,
+                        false, true, false);
+                digitalClock.applyUserPreferredTextSizeSp(SettingsDAO.getDigitalClockFontSize(mPrefs));
+            } else if (mIsDigitalClock) {
                 ClockUtils.setDigitalClockFont(digitalClock, SettingsDAO.getDigitalClockFont(mPrefs));
                 ClockUtils.setDigitalClockTimeFormat(digitalClock, 0.4f, mShowSeconds,
                         false, true, false);
@@ -691,6 +702,7 @@ public final class ClockFragment extends DeskClockFragment {
             private final String mDigitalClockFontPath;
             private final float mDigitalClockFontSize;
 
+            @SuppressLint("ClickableViewAccessibility")
             private MainClockViewHolder(View itemView) {
                 super(itemView);
 
@@ -703,6 +715,18 @@ public final class ClockFragment extends DeskClockFragment {
                 mAreClockSecondsDisplayed = SettingsDAO.areClockSecondsDisplayed(mPrefs);
                 mDigitalClockFontPath = SettingsDAO.getDigitalClockFont(mPrefs);
                 mDigitalClockFontSize = SettingsDAO.getDigitalClockFontSize(mPrefs);
+
+                // Double-tap on clock launches screensaver
+                final Context context = itemView.getContext();
+                final GestureDetector gestureDetector = new GestureDetector(context,
+                        new GestureDetector.SimpleOnGestureListener() {
+                            @Override
+                            public boolean onDoubleTap(@NonNull MotionEvent e) {
+                                context.startActivity(new Intent(context, ScreensaverActivity.class));
+                                return true;
+                            }
+                        });
+                mMainClockContainer.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
             }
 
             private void bind(Context context, String dateFormat, String dateFormatForAccessibility,
@@ -729,7 +753,14 @@ public final class ClockFragment extends DeskClockFragment {
                 }
 
                 ClockUtils.setClockStyle(mClockStyle, mDigitalClock, mAnalogClock);
-                if (mClockStyle == DataModel.ClockStyle.DIGITAL) {
+                if (mClockStyle == DataModel.ClockStyle.COMBO) {
+                    ClockUtils.adjustAnalogClockSize(mAnalogClock, mPrefs, false, true, false);
+                    ClockUtils.setAnalogClockSecondsEnabled(mClockStyle, mAnalogClock, mAreClockSecondsDisplayed);
+                    ClockUtils.setDigitalClockFont(mDigitalClock, mDigitalClockFontPath);
+                    ClockUtils.setDigitalClockTimeFormat(mDigitalClock, 0.4f, mAreClockSecondsDisplayed,
+                            false, true, false);
+                    mDigitalClock.applyUserPreferredTextSizeSp(mDigitalClockFontSize);
+                } else if (mClockStyle == DataModel.ClockStyle.DIGITAL) {
                     ClockUtils.setDigitalClockFont(mDigitalClock, mDigitalClockFontPath);
                     ClockUtils.setDigitalClockTimeFormat(mDigitalClock, 0.4f, mAreClockSecondsDisplayed,
                             false, true, false);

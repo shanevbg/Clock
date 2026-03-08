@@ -568,6 +568,79 @@ public final class SettingsDAO {
     }
 
     /**
+     * @return {@code true} if the color-shifting background is enabled for the screensaver.
+     * {@code false} otherwise.
+     */
+    public static boolean isScreensaverColorShiftEnabled(SharedPreferences prefs) {
+        return prefs.getBoolean(KEY_SCREENSAVER_COLOR_SHIFT_ENABLED, DEFAULT_SCREENSAVER_COLOR_SHIFT_ENABLED);
+    }
+
+    /**
+     * @return the color shift mode: "hue_rotation", "gradient", or "aurora".
+     */
+    public static String getScreensaverColorShiftMode(SharedPreferences prefs) {
+        return prefs.getString(KEY_SCREENSAVER_COLOR_SHIFT_MODE, DEFAULT_SCREENSAVER_COLOR_SHIFT_MODE);
+    }
+
+    /**
+     * @return the color shift speed (1-100).
+     */
+    public static int getScreensaverColorShiftSpeed(SharedPreferences prefs) {
+        return prefs.getInt(KEY_SCREENSAVER_COLOR_SHIFT_SPEED, DEFAULT_SCREENSAVER_COLOR_SHIFT_SPEED);
+    }
+
+    /**
+     * @return the first color for gradient mode.
+     */
+    public static int getScreensaverColorShiftColor1(SharedPreferences prefs) {
+        return prefs.getInt(KEY_SCREENSAVER_COLOR_SHIFT_COLOR_1, DEFAULT_SCREENSAVER_COLOR_SHIFT_COLOR_1);
+    }
+
+    /**
+     * @return the second color for gradient mode.
+     */
+    public static int getScreensaverColorShiftColor2(SharedPreferences prefs) {
+        return prefs.getInt(KEY_SCREENSAVER_COLOR_SHIFT_COLOR_2, DEFAULT_SCREENSAVER_COLOR_SHIFT_COLOR_2);
+    }
+
+    /**
+     * @return {@code true} if the screensaver should auto-launch when charging.
+     */
+    public static boolean isAutoStartScreensaverWhenCharging(SharedPreferences prefs) {
+        return prefs.getBoolean(KEY_AUTO_START_SCREENSAVER_WHEN_CHARGING, DEFAULT_AUTO_START_SCREENSAVER_WHEN_CHARGING);
+    }
+
+    // Combo screensaver settings
+
+    public static boolean isComboShowAnalog(SharedPreferences prefs) {
+        return prefs.getBoolean(KEY_COMBO_SHOW_ANALOG, DEFAULT_COMBO_SHOW_ANALOG);
+    }
+
+    public static boolean isComboShowDigital(SharedPreferences prefs) {
+        return prefs.getBoolean(KEY_COMBO_SHOW_DIGITAL, DEFAULT_COMBO_SHOW_DIGITAL);
+    }
+
+    public static boolean isComboShowDate(SharedPreferences prefs) {
+        return prefs.getBoolean(KEY_COMBO_SHOW_DATE, DEFAULT_COMBO_SHOW_DATE);
+    }
+
+    public static int getComboAnalogColor(SharedPreferences prefs) {
+        return prefs.getInt(KEY_COMBO_ANALOG_COLOR, DEFAULT_COMBO_ANALOG_COLOR);
+    }
+
+    public static int getComboDigitalColor(SharedPreferences prefs) {
+        return prefs.getInt(KEY_COMBO_DIGITAL_COLOR, DEFAULT_COMBO_DIGITAL_COLOR);
+    }
+
+    public static int getComboDateColor(SharedPreferences prefs) {
+        return prefs.getInt(KEY_COMBO_DATE_COLOR, DEFAULT_COMBO_DATE_COLOR);
+    }
+
+    public static int getComboDateSize(SharedPreferences prefs) {
+        return prefs.getInt(KEY_COMBO_DATE_SIZE, DEFAULT_COMBO_DATE_SIZE);
+    }
+
+    /**
      * @return the uri of the selected ringtone or the {@code defaultUri} if no explicit selection
      * has yet been made.
      */

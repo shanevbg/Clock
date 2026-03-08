@@ -234,6 +234,58 @@
     </com.best.deskclock.settings.custompreference.CustomPreferenceCategory>
 
     <com.best.deskclock.settings.custompreference.CustomPreferenceCategory
+        android:title="@string/color_shift_category_title"
+        app:allowDividerAbove="false"
+        app:iconSpaceReserved="false"
+        tools:layout="@layout/settings_preference_category_layout">
+
+        <com.best.deskclock.settings.custompreference.CustomSwitchPreference
+            android:key="key_screensaver_color_shift_enabled"
+            android:title="@string/color_shift_enabled_title"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.CustomListPreference
+            android:key="key_screensaver_color_shift_mode"
+            android:title="@string/color_shift_mode_title"
+            android:entries="@array/color_shift_mode_entries"
+            android:entryValues="@array/color_shift_mode_values"
+            android:defaultValue="hue_rotation"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.CustomSeekbarPreference
+            android:key="key_screensaver_color_shift_speed"
+            android:title="@string/color_shift_speed_title"
+            android:summary="@string/label_default"
+            android:defaultValue="50"
+            android:max="100"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_seekbar_layout" />
+
+        <com.best.deskclock.settings.custompreference.ColorPickerPreference
+            android:key="key_screensaver_color_shift_color_1"
+            android:title="@string/color_shift_color_1_title"
+            android:defaultValue="#FFFF0000"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.ColorPickerPreference
+            android:key="key_screensaver_color_shift_color_2"
+            android:title="@string/color_shift_color_2_title"
+            android:defaultValue="#FF0000FF"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+    </com.best.deskclock.settings.custompreference.CustomPreferenceCategory>
+
+    <com.best.deskclock.settings.custompreference.CustomPreferenceCategory
         android:title="@string/miscellaneous_category_title"
         app:allowDividerAbove="false"
         app:iconSpaceReserved="false"
@@ -264,6 +316,15 @@
             app:singleLineTitle="false"
             tools:layout="@layout/settings_preference_seekbar_layout" />
 
+        <com.best.deskclock.settings.custompreference.CustomSwitchPreference
+            android:key="key_auto_start_screensaver_when_charging"
+            android:title="@string/auto_start_screensaver_when_charging_title"
+            android:summary="@string/auto_start_screensaver_when_charging_summary"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
         <com.best.deskclock.settings.custompreference.CustomPreference
             android:key="key_screensaver_preview"
             android:title="@string/preview_title"
@@ -279,6 +340,72 @@
             app:iconSpaceReserved="false"
             app:singleLineTitle="false"
             tools:layout="@layout/settings_preference_layout" />
+
+    </com.best.deskclock.settings.custompreference.CustomPreferenceCategory>
+
+    <com.best.deskclock.settings.custompreference.CustomPreferenceCategory
+        android:key="key_combo_category"
+        android:title="@string/combo_screensaver_category_title"
+        app:allowDividerAbove="false"
+        app:iconSpaceReserved="false"
+        tools:layout="@layout/settings_preference_category_layout">
+
+        <com.best.deskclock.settings.custompreference.CustomSwitchPreference
+            android:key="key_combo_show_analog"
+            android:title="@string/combo_show_analog_title"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.ColorPickerPreference
+            android:key="key_combo_analog_color"
+            android:title="@string/combo_analog_color_title"
+            android:defaultValue="#FFFFFF"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.CustomSwitchPreference
+            android:key="key_combo_show_digital"
+            android:title="@string/combo_show_digital_title"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.ColorPickerPreference
+            android:key="key_combo_digital_color"
+            android:title="@string/combo_digital_color_title"
+            android:defaultValue="#FFFFFF"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.CustomSwitchPreference
+            android:key="key_combo_show_date"
+            android:title="@string/combo_show_date_title"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.ColorPickerPreference
+            android:key="key_combo_date_color"
+            android:title="@string/combo_date_color_title"
+            android:defaultValue="#FFFFFF"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.CustomSeekbarPreference
+            android:key="key_combo_date_size"
+            android:title="@string/combo_date_size_title"
+            android:defaultValue="24"
+            android:max="60"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_seekbar_layout" />
 
     </com.best.deskclock.settings.custompreference.CustomPreferenceCategory>
 

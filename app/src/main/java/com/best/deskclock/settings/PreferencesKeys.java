@@ -212,6 +212,21 @@ public class PreferencesKeys {
     public static final String KEY_SCREENSAVER_BLUR_INTENSITY = "key_screensaver_blur_intensity";
     public static final String KEY_SCREENSAVER_PREVIEW = "key_screensaver_preview";
     public static final String KEY_SCREENSAVER_DAYDREAM_SETTINGS = "key_screensaver_daydream_settings";
+    public static final String KEY_SCREENSAVER_COLOR_SHIFT_ENABLED = "key_screensaver_color_shift_enabled";
+    public static final String KEY_SCREENSAVER_COLOR_SHIFT_MODE = "key_screensaver_color_shift_mode";
+    public static final String KEY_SCREENSAVER_COLOR_SHIFT_SPEED = "key_screensaver_color_shift_speed";
+    public static final String KEY_SCREENSAVER_COLOR_SHIFT_COLOR_1 = "key_screensaver_color_shift_color_1";
+    public static final String KEY_SCREENSAVER_COLOR_SHIFT_COLOR_2 = "key_screensaver_color_shift_color_2";
+    public static final String KEY_AUTO_START_SCREENSAVER_WHEN_CHARGING = "key_auto_start_screensaver_when_charging";
+
+    // Combo screensaver
+    public static final String KEY_COMBO_SHOW_ANALOG = "key_combo_show_analog";
+    public static final String KEY_COMBO_SHOW_DIGITAL = "key_combo_show_digital";
+    public static final String KEY_COMBO_SHOW_DATE = "key_combo_show_date";
+    public static final String KEY_COMBO_ANALOG_COLOR = "key_combo_analog_color";
+    public static final String KEY_COMBO_DIGITAL_COLOR = "key_combo_digital_color";
+    public static final String KEY_COMBO_DATE_COLOR = "key_combo_date_color";
+    public static final String KEY_COMBO_DATE_SIZE = "key_combo_date_size";
 
     // **************
     // ** WIDGETS **

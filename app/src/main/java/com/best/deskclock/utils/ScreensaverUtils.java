@@ -24,8 +24,11 @@ import android.graphics.drawable.Drawable;
 import android.os.BatteryManager;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -36,10 +39,15 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.best.deskclock.R;
+import com.best.deskclock.screensaver.ColorShiftingBackgroundView;
+import com.best.deskclock.screensaver.MoveScreensaverRunnable;
 import com.best.deskclock.data.DataModel.ClockStyle;
 import com.best.deskclock.data.SettingsDAO;
 import com.best.deskclock.uicomponents.AnalogClock;
 import com.best.deskclock.uicomponents.AutoSizingTextClock;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -359,33 +367,48 @@ public class ScreensaverUtils {
 
         final View mainClockView = view.findViewById(R.id.main_clock);
         final ImageView backgroundImage = view.findViewById(R.id.screensaver_background_image);
-        final String imagePath = SettingsDAO.getScreensaverBackgroundImage(prefs);
+        final ColorShiftingBackgroundView colorShiftBackground = view.findViewById(R.id.screensaver_color_shift_background);
+        final boolean isColorShiftEnabled = SettingsDAO.isScreensaverColorShiftEnabled(prefs);
 
-        if (imagePath != null) {
-            backgroundImage.setVisibility(VISIBLE);
+        if (isColorShiftEnabled && colorShiftBackground != null) {
+            // Color shift takes priority over background image
+            backgroundImage.setVisibility(View.GONE);
+            colorShiftBackground.setVisibility(VISIBLE);
+            colorShiftBackground.configure(prefs);
+        } else {
+            if (colorShiftBackground != null) {
+                colorShiftBackground.setVisibility(View.GONE);
+                colorShiftBackground.stopAnimation();
+            }
 
-            File imageFile = new File(imagePath);
-            if (imageFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-                if (bitmap != null) {
-                    backgroundImage.setImageBitmap(bitmap);
-                    applyBrightness(backgroundImage, prefs, null, null);
+            final String imagePath = SettingsDAO.getScreensaverBackgroundImage(prefs);
 
-                    if (SdkUtils.isAtLeastAndroid12() && SettingsDAO.isScreensaverBlurEffectEnabled(prefs)) {
-                        float intensity = SettingsDAO.getScreensaverBlurIntensity(prefs);
-                        RenderEffect blur = RenderEffect.createBlurEffect(intensity, intensity, Shader.TileMode.CLAMP);
-                        backgroundImage.setRenderEffect(blur);
+            if (imagePath != null) {
+                backgroundImage.setVisibility(VISIBLE);
+
+                File imageFile = new File(imagePath);
+                if (imageFile.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                    if (bitmap != null) {
+                        backgroundImage.setImageBitmap(bitmap);
+                        applyBrightness(backgroundImage, prefs, null, null);
+
+                        if (SdkUtils.isAtLeastAndroid12() && SettingsDAO.isScreensaverBlurEffectEnabled(prefs)) {
+                            float intensity = SettingsDAO.getScreensaverBlurIntensity(prefs);
+                            RenderEffect blur = RenderEffect.createBlurEffect(intensity, intensity, Shader.TileMode.CLAMP);
+                            backgroundImage.setRenderEffect(blur);
+                        }
+                    } else {
+                        LogUtils.e("Bitmap null for path: " + imagePath);
+                        backgroundImage.setVisibility(View.GONE);
                     }
                 } else {
-                    LogUtils.e("Bitmap null for path: " + imagePath);
+                    LogUtils.e("Image file not found: " + imagePath);
                     backgroundImage.setVisibility(View.GONE);
                 }
             } else {
-                LogUtils.e("Image file not found: " + imagePath);
                 backgroundImage.setVisibility(View.GONE);
             }
-        } else {
-            backgroundImage.setVisibility(View.GONE);
         }
 
         // Style
@@ -411,9 +434,62 @@ public class ScreensaverUtils {
                 ? inversePrimaryColor
                 : SettingsDAO.getScreensaverNextAlarmColorPicker(prefs);
 
+        // Handle combo layout orientation
+        final LinearLayout comboContainer = mainClockView.findViewById(R.id.combo_clock_container);
+        if (comboContainer != null) {
+            if (screensaverClockStyle == ClockStyle.COMBO) {
+                comboContainer.setOrientation(LinearLayout.HORIZONTAL);
+            } else {
+                comboContainer.setOrientation(LinearLayout.VERTICAL);
+            }
+        }
+
         ClockUtils.setClockStyle(screensaverClockStyle, textClock, analogClock);
 
-        if (screensaverClockStyle == ClockStyle.DIGITAL) {
+        if (screensaverClockStyle == ClockStyle.COMBO) {
+            // Combo-specific colors
+            final int comboAnalogColor = SettingsDAO.getComboAnalogColor(prefs);
+            final int comboDigitalColor = SettingsDAO.getComboDigitalColor(prefs);
+            final int comboDateColor = SettingsDAO.getComboDateColor(prefs);
+            final int comboDateSize = SettingsDAO.getComboDateSize(prefs);
+
+            // Combo toggles
+            final boolean showAnalog = SettingsDAO.isComboShowAnalog(prefs);
+            final boolean showDigital = SettingsDAO.isComboShowDigital(prefs);
+            final boolean showDate = SettingsDAO.isComboShowDate(prefs);
+
+            // Analog clock
+            if (showAnalog) {
+                analogClock.setVisibility(VISIBLE);
+                ClockUtils.adjustAnalogClockSize(analogClock, prefs, false, false, true);
+                ClockUtils.setAnalogClockSecondsEnabled(screensaverClockStyle, analogClock, areClockSecondsEnabled);
+                applyBrightness(analogClock, prefs, comboAnalogColor, null);
+            } else {
+                analogClock.setVisibility(View.GONE);
+            }
+
+            // Digital clock
+            if (showDigital) {
+                textClock.setVisibility(VISIBLE);
+                textClock.setTypeface(getScreensaverClockTypeface(prefs));
+                ClockUtils.setDigitalClockTimeFormat(textClock, 0.4f, areClockSecondsEnabled,
+                        false, false, true);
+                textClock.applyUserPreferredTextSizeSp(SettingsDAO.getScreensaverDigitalClockFontSize(prefs));
+                applyBrightness(textClock, prefs, comboDigitalColor, null);
+            } else {
+                textClock.setVisibility(View.GONE);
+            }
+
+            // Date
+            if (showDate) {
+                date.setTextSize(comboDateSize);
+                applyBrightness(date, prefs, comboDateColor, null);
+            } else {
+                date.setVisibility(View.GONE);
+                nextAlarmIcon.setVisibility(View.GONE);
+                nextAlarm.setVisibility(View.GONE);
+            }
+        } else if (screensaverClockStyle == ClockStyle.DIGITAL) {
             textClock.setTypeface(getScreensaverClockTypeface(prefs));
             ClockUtils.setDigitalClockTimeFormat(textClock, 0.4f, areClockSecondsEnabled,
                     false, false, true);
@@ -444,6 +520,75 @@ public class ScreensaverUtils {
         applyBrightness(date, prefs, screensaverDateColorPicker, null);
         applyBrightness(nextAlarmIcon, prefs, screensaverNextAlarmColorPicker, null);
         applyBrightness(nextAlarm, prefs, screensaverNextAlarmColorPicker, null);
+    }
+
+    /**
+     * For combo mode, reparent the visible elements into separate wrappers so each can float
+     * independently. Returns a list of MoveScreensaverRunnables for each floating element.
+     * If not in combo mode, returns null (use the standard single-element floating).
+     */
+    public static List<MoveScreensaverRunnable> setupComboFloating(
+            View contentView, View mainClockView, SharedPreferences prefs) {
+
+        ClockStyle style = SettingsDAO.getScreensaverClockStyle(prefs);
+        if (style != ClockStyle.COMBO) {
+            return null;
+        }
+
+        boolean showAnalog = SettingsDAO.isComboShowAnalog(prefs);
+        boolean showDigital = SettingsDAO.isComboShowDigital(prefs);
+        boolean showDate = SettingsDAO.isComboShowDate(prefs);
+
+        View analogClock = mainClockView.findViewById(R.id.analog_clock);
+        View digitalClock = mainClockView.findViewById(R.id.digital_clock);
+        // The date container is the included layout (parent of R.id.date)
+        View dateView = mainClockView.findViewById(R.id.date);
+        View dateContainer = dateView != null ? (View) dateView.getParent() : null;
+
+        // Hide the main container so elements don't overlap
+        mainClockView.setVisibility(View.INVISIBLE);
+
+        FrameLayout container = (FrameLayout) contentView;
+
+        // Count how many elements will be shown, to spread initial positions
+        int count = 0;
+        if (showAnalog && analogClock != null) count++;
+        if (showDigital && digitalClock != null) count++;
+        if (showDate && dateContainer != null) count++;
+
+        List<MoveScreensaverRunnable> updaters = new ArrayList<>();
+        int index = 0;
+
+        if (showAnalog && analogClock != null) {
+            FrameLayout wrapper = createWrapper(analogClock, container);
+            updaters.add(new MoveScreensaverRunnable(contentView, wrapper, index++, count));
+        }
+
+        if (showDigital && digitalClock != null) {
+            FrameLayout wrapper = createWrapper(digitalClock, container);
+            updaters.add(new MoveScreensaverRunnable(contentView, wrapper, index++, count));
+        }
+
+        if (showDate && dateContainer != null) {
+            FrameLayout wrapper = createWrapper(dateContainer, container);
+            updaters.add(new MoveScreensaverRunnable(contentView, wrapper, index++, count));
+        }
+
+        return updaters;
+    }
+
+    private static FrameLayout createWrapper(View child, FrameLayout container) {
+        ViewGroup parent = (ViewGroup) child.getParent();
+        if (parent != null) {
+            parent.removeView(child);
+        }
+        FrameLayout wrapper = new FrameLayout(container.getContext());
+        wrapper.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT));
+        wrapper.addView(child);
+        container.addView(wrapper);
+        return wrapper;
     }
 
     /**
