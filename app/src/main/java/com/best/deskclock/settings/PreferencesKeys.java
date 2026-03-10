@@ -227,6 +227,10 @@ public class PreferencesKeys {
     public static final String KEY_COMBO_DIGITAL_COLOR = "key_combo_digital_color";
     public static final String KEY_COMBO_DATE_COLOR = "key_combo_date_color";
     public static final String KEY_COMBO_DATE_SIZE = "key_combo_date_size";
+    public static final String KEY_COMBO_SHOW_TEMPERATURE = "key_combo_show_temperature";
+    public static final String KEY_COMBO_TEMPERATURE_COLOR = "key_combo_temperature_color";
+    public static final String KEY_COMBO_TEMPERATURE_SIZE = "key_combo_temperature_size";
+    public static final String KEY_COMBO_TEMPERATURE_OFFSET = "key_combo_temperature_offset";
 
     // **************
     // ** WIDGETS **

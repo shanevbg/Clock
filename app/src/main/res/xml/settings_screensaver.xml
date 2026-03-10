@@ -407,6 +407,40 @@
             app:singleLineTitle="false"
             tools:layout="@layout/settings_preference_seekbar_layout" />
 
+        <com.best.deskclock.settings.custompreference.CustomSwitchPreference
+            android:key="key_combo_show_temperature"
+            android:title="@string/combo_show_temperature_title"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.ColorPickerPreference
+            android:key="key_combo_temperature_color"
+            android:title="@string/combo_temperature_color_title"
+            android:defaultValue="#FFFFFF"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_layout" />
+
+        <com.best.deskclock.settings.custompreference.CustomSeekbarPreference
+            android:key="key_combo_temperature_size"
+            android:title="@string/combo_temperature_size_title"
+            android:defaultValue="60"
+            android:max="120"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            tools:layout="@layout/settings_preference_seekbar_layout" />
+
+        <EditTextPreference
+            android:key="key_combo_temperature_offset"
+            android:title="@string/combo_temperature_offset_title"
+            android:defaultValue="0"
+            android:inputType="numberSigned"
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            app:useSimpleSummaryProvider="true" />
+
     </com.best.deskclock.settings.custompreference.CustomPreferenceCategory>
 
 </PreferenceScreen>

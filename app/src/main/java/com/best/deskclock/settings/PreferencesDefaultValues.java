@@ -187,6 +187,10 @@ public class PreferencesDefaultValues {
     public static final int DEFAULT_COMBO_DIGITAL_COLOR = Color.WHITE;
     public static final int DEFAULT_COMBO_DATE_COLOR = Color.WHITE;
     public static final int DEFAULT_COMBO_DATE_SIZE = 24;
+    public static final boolean DEFAULT_COMBO_SHOW_TEMPERATURE = true;
+    public static final int DEFAULT_COMBO_TEMPERATURE_COLOR = Color.WHITE;
+    public static final int DEFAULT_COMBO_TEMPERATURE_SIZE = 60;
+    public static final int DEFAULT_COMBO_TEMPERATURE_OFFSET = 0;
 
     // Common settings values
     public static final String DEFAULT_CLOCK_DIAL = "dial_with_numbers";

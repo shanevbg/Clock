@@ -113,8 +113,10 @@ public final class MoveScreensaverRunnable implements Runnable {
         // Execute the position updater runnable to choose the first random position of saver view.
         run();
 
-        // Schedule callbacks every minute to adjust the position of mSaverView.
-        UiDataModel.getUiDataModel().addHalfMinuteCallback(this, -FADE_TIME);
+        // Schedule callbacks every half minute to adjust the position of mSaverView.
+        // For combo elements, add a per-element time jitter so they don't all move simultaneously.
+        long jitter = mRegionCount > 1 ? (long) (mRegionIndex * 7000L) : 0;
+        UiDataModel.getUiDataModel().addHalfMinuteCallback(this, -FADE_TIME + jitter);
     }
 
     /**

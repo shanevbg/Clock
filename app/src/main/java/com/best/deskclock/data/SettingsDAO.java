@@ -640,6 +640,30 @@ public final class SettingsDAO {
         return prefs.getInt(KEY_COMBO_DATE_SIZE, DEFAULT_COMBO_DATE_SIZE);
     }
 
+    public static boolean isComboShowTemperature(SharedPreferences prefs) {
+        return prefs.getBoolean(KEY_COMBO_SHOW_TEMPERATURE, DEFAULT_COMBO_SHOW_TEMPERATURE);
+    }
+
+    public static int getComboTemperatureColor(SharedPreferences prefs) {
+        return prefs.getInt(KEY_COMBO_TEMPERATURE_COLOR, DEFAULT_COMBO_TEMPERATURE_COLOR);
+    }
+
+    public static int getComboTemperatureSize(SharedPreferences prefs) {
+        return prefs.getInt(KEY_COMBO_TEMPERATURE_SIZE, DEFAULT_COMBO_TEMPERATURE_SIZE);
+    }
+
+    public static int getComboTemperatureOffset(SharedPreferences prefs) {
+        try {
+            return Integer.parseInt(prefs.getString(KEY_COMBO_TEMPERATURE_OFFSET,
+                    String.valueOf(DEFAULT_COMBO_TEMPERATURE_OFFSET)));
+        } catch (ClassCastException e) {
+            // Migration from old int-based seekbar preference
+            return prefs.getInt(KEY_COMBO_TEMPERATURE_OFFSET, DEFAULT_COMBO_TEMPERATURE_OFFSET);
+        } catch (NumberFormatException e) {
+            return DEFAULT_COMBO_TEMPERATURE_OFFSET;
+        }
+    }
+
     /**
      * @return the uri of the selected ringtone or the {@code defaultUri} if no explicit selection
      * has yet been made.

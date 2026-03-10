@@ -84,6 +84,18 @@
 
         <include layout="@layout/date_and_next_alarm_time" />
 
+        <TextView
+            android:id="@+id/combo_temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textSize="60sp"
+            tools:text="21°C"
+            tools:visibility="visible"
+            tools:ignore="TextContrastCheck" />
+
     </LinearLayout>
 
 </FrameLayout>

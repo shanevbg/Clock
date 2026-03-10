@@ -21,6 +21,8 @@ import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.BatteryManager;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -489,6 +491,20 @@ public class ScreensaverUtils {
                 nextAlarmIcon.setVisibility(View.GONE);
                 nextAlarm.setVisibility(View.GONE);
             }
+
+            // Temperature
+            final boolean showTemperature = SettingsDAO.isComboShowTemperature(prefs);
+            final TextView temperatureView = view.findViewById(R.id.combo_temperature);
+            if (temperatureView != null) {
+                if (showTemperature) {
+                    temperatureView.setVisibility(VISIBLE);
+                    temperatureView.setTextSize(SettingsDAO.getComboTemperatureSize(prefs));
+                    applyBrightness(temperatureView, prefs, SettingsDAO.getComboTemperatureColor(prefs), null);
+                    temperatureView.setText("--°");
+                } else {
+                    temperatureView.setVisibility(View.GONE);
+                }
+            }
         } else if (screensaverClockStyle == ClockStyle.DIGITAL) {
             textClock.setTypeface(getScreensaverClockTypeface(prefs));
             ClockUtils.setDigitalClockTimeFormat(textClock, 0.4f, areClockSecondsEnabled,
@@ -538,12 +554,14 @@ public class ScreensaverUtils {
         boolean showAnalog = SettingsDAO.isComboShowAnalog(prefs);
         boolean showDigital = SettingsDAO.isComboShowDigital(prefs);
         boolean showDate = SettingsDAO.isComboShowDate(prefs);
+        boolean showTemperature = SettingsDAO.isComboShowTemperature(prefs);
 
         View analogClock = mainClockView.findViewById(R.id.analog_clock);
         View digitalClock = mainClockView.findViewById(R.id.digital_clock);
         // The date container is the included layout (parent of R.id.date)
         View dateView = mainClockView.findViewById(R.id.date);
         View dateContainer = dateView != null ? (View) dateView.getParent() : null;
+        View temperatureView = mainClockView.findViewById(R.id.combo_temperature);
 
         // Hide the main container so elements don't overlap
         mainClockView.setVisibility(View.INVISIBLE);
@@ -555,6 +573,7 @@ public class ScreensaverUtils {
         if (showAnalog && analogClock != null) count++;
         if (showDigital && digitalClock != null) count++;
         if (showDate && dateContainer != null) count++;
+        if (showTemperature && temperatureView != null) count++;
 
         List<MoveScreensaverRunnable> updaters = new ArrayList<>();
         int index = 0;
@@ -574,7 +593,75 @@ public class ScreensaverUtils {
             updaters.add(new MoveScreensaverRunnable(contentView, wrapper, index++, count));
         }
 
+        if (showTemperature && temperatureView != null) {
+            FrameLayout wrapper = createWrapper(temperatureView, container);
+            updaters.add(new MoveScreensaverRunnable(contentView, wrapper, index++, count));
+        }
+
         return updaters;
+    }
+
+    /**
+     * Update the temperature display on the screensaver.
+     * @param contentView the root screensaver view
+     * @param temperatureCelsius the temperature in degrees Celsius
+     */
+    public static void updateTemperatureText(View contentView, float temperatureCelsius) {
+        TextView temperatureView = contentView.findViewById(R.id.combo_temperature);
+        if (temperatureView == null || temperatureView.getVisibility() != VISIBLE) {
+            return;
+        }
+
+        // Apply user calibration offset (seekbar 0-50, subtracted from raw sensor reading)
+        SharedPreferences prefs = getDefaultSharedPreferences(contentView.getContext());
+        int offset = SettingsDAO.getComboTemperatureOffset(prefs);
+        float calibrated = temperatureCelsius - offset;
+
+        // Use Fahrenheit for US locale, Celsius otherwise
+        java.util.Locale locale = java.util.Locale.getDefault();
+        boolean useFahrenheit = locale.equals(java.util.Locale.US)
+                || "US".equals(locale.getCountry());
+
+        String text;
+        if (useFahrenheit) {
+            int fahrenheit = Math.round(calibrated * 9f / 5f + 32f);
+            text = fahrenheit + "°F";
+        } else {
+            int celsius = Math.round(calibrated);
+            text = celsius + "°C";
+        }
+
+        temperatureView.setText(text);
+    }
+
+    /**
+     * Find a temperature sensor. Tries in order:
+     * 1. Standard Android ambient temperature sensor
+     * 2. Pixel pressure sensor temperature (accessible, ambient-adjacent)
+     * 3. Pixel gyro temperature (last resort)
+     */
+    @Nullable
+    public static Sensor findTemperatureSensor(SensorManager sensorManager) {
+        // Standard ambient temperature sensor (available on some devices)
+        Sensor ambient = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+        if (ambient != null) {
+            return ambient;
+        }
+
+        // Pixel devices: use pressure sensor temp (no permission needed, ambient-adjacent)
+        Sensor pressureTemp = null;
+        Sensor gyroTemp = null;
+        for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
+            String type = sensor.getStringType();
+            if ("com.google.sensor.pressure_temp".equals(type)) {
+                pressureTemp = sensor;
+            } else if ("com.google.sensor.gyro_temperature".equals(type)) {
+                gyroTemp = sensor;
+            }
+        }
+
+        if (pressureTemp != null) return pressureTemp;
+        return gyroTemp;
     }
 
     private static FrameLayout createWrapper(View child, FrameLayout container) {

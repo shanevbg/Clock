@@ -16,6 +16,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.service.dreams.DreamService;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
@@ -81,6 +85,20 @@ public final class Screensaver extends DreamService {
     };
 
     private View mMainClockView;
+
+    private SensorManager mSensorManager;
+    private Sensor mTemperatureSensor;
+
+    private final SensorEventListener mTemperatureListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            ScreensaverUtils.updateTemperatureText(mContentView, event.values[0]);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -161,11 +179,22 @@ public final class Screensaver extends DreamService {
         if (intent != null) {
             ScreensaverUtils.updateBatteryText(mContentView, intent);
         }
+
+        // Register temperature sensor if available
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mTemperatureSensor = ScreensaverUtils.findTemperatureSensor(mSensorManager);
+        if (mTemperatureSensor != null) {
+            mSensorManager.registerListener(mTemperatureListener, mTemperatureSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
     public void onDreamingStopped() {
         super.onDreamingStopped();
+        if (mSensorManager != null && mTemperatureSensor != null) {
+            mSensorManager.unregisterListener(mTemperatureListener);
+        }
         unregisterReceiver(mBatteryReceiver);
     }
 

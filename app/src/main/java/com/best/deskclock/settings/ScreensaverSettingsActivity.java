@@ -218,6 +218,15 @@ public final class ScreensaverSettingsActivity extends CollapsingToolbarBaseActi
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
+            // Migrate temperature offset from old int (seekbar) to string (EditText)
+            try {
+                mPrefs.getInt("key_combo_temperature_offset", 0);
+                // If we get here, it's still an int — remove it so EditTextPreference can use string
+                mPrefs.edit().remove("key_combo_temperature_offset").apply();
+            } catch (ClassCastException ignored) {
+                // Already a string, no migration needed
+            }
+
             addPreferencesFromResource(R.xml.settings_screensaver);
 
             mClockStylePref = findPreference(KEY_SCREENSAVER_CLOCK_STYLE);

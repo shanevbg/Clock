@@ -17,6 +17,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
@@ -94,6 +98,20 @@ public class ScreensaverActivity extends BaseActivity {
     private List<MoveScreensaverRunnable> mComboPositionUpdaters;
     private PulseScreensaverBackgroundRunnable mBackgroundAnimator;
 
+    private SensorManager mSensorManager;
+    private Sensor mTemperatureSensor;
+
+    private final SensorEventListener mTemperatureListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            ScreensaverUtils.updateTemperatureText(mContentView, event.values[0]);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,6 +176,14 @@ public class ScreensaverActivity extends BaseActivity {
         ScreensaverUtils.updateScreensaverDate(mDateFormat, mDateFormatForAccessibility, mContentView);
         AlarmUtils.refreshAlarm(ScreensaverActivity.this, mContentView, true);
 
+        // Register temperature sensor if available
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mTemperatureSensor = ScreensaverUtils.findTemperatureSensor(mSensorManager);
+        if (mTemperatureSensor != null) {
+            mSensorManager.registerListener(mTemperatureListener, mTemperatureSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
         startPositionUpdater();
         if (mBackgroundAnimator != null) {
             mBackgroundAnimator.start();
@@ -178,6 +204,9 @@ public class ScreensaverActivity extends BaseActivity {
     @Override
     public void onPause() {
         super.onPause();
+        if (mSensorManager != null && mTemperatureSensor != null) {
+            mSensorManager.unregisterListener(mTemperatureListener);
+        }
         UiDataModel.getUiDataModel().removePeriodicCallback(mMidnightUpdater);
         stopPositionUpdater();
         if (mBackgroundAnimator != null) {
